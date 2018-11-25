@@ -119,10 +119,10 @@ function distance(posA, posB)
 end
 
 function DrawMeterStatus(meter, text)
-  DrawText3DTest(meter.x, meter.y, meter.z + 1.4, text)
+  DrawText3D(meter.x, meter.y, meter.z + 1.4, text)
 end
 
-function DrawText3DTest(x,y,z, text)
+function DrawText3D(x,y,z, text)
     local onScreen,_x,_y=World3dToScreen2d(x,y,z)
     local px,py,pz=table.unpack(GetGameplayCamCoords())
 
