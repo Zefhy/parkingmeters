@@ -1,8 +1,10 @@
-local max_park_time = 30 -- Minutes
+local max_park_time = 10/60 -- Minutes
 
 local parking_prop = "prop_parknmeter_01"
 local meters = { }
 local time = 0
+local closemeter = nil
+local pcoords = nil
 
 -- Timer
 Citizen.CreateThread(function()
@@ -14,11 +16,11 @@ end)
 
 Citizen.CreateThread(function()
   while true do
-    local objectCoords = GetEntityCoords(GetPlayerPed(-1))
-    local closemeter = GetClosestObjectOfType(objectCoords.x, objectCoords.y, objectCoords.z, 10.0, GetHashKey(parking_prop), false, false, false)
+    pcoords = GetEntityCoords(GetPlayerPed(-1))
+    closemeter = GetClosestObjectOfType(pcoords.x, pcoords.y, pcoords.z, 10.0, GetHashKey(parking_prop), false, false, false)
     local objectCoordsDraw = GetEntityCoords(closemeter)
 
-    if distance(objectCoordsDraw, objectCoords) < 5 then
+    if distance(objectCoordsDraw, pcoords) < 5 then
       if not HasObjectBeenBroken(closemeter) then
         if contains(meters, closemeter) then
           local countdown = round(timeRemaining(meters[closemeter])/60, 1)
@@ -37,27 +39,22 @@ Citizen.CreateThread(function()
 end)
 
 RegisterCommand("meter", function(source, args)
-  local nearMeter = false
-  local broken = false
-  local pcoords = GetEntityCoords(GetPlayerPed(-1), true)
   local subcommand = args[1]
 
-  local closestParkingMeter = GetClosestObjectOfType(pcoords.x, pcoords.y, pcoords.z, 5.0, GetHashKey(parking_prop), false, false, false)
-
-  if (DoesEntityExist(closestParkingMeter)) then
-    local meterPos = GetEntityCoords(closestParkingMeter)
+  if (DoesEntityExist(closemeter)) then
+    local meterPos = GetEntityCoords(closemeter)
     local dist = distance(pcoords, meterPos)
 
     nearMeter = dist < 5
-    broken = HasObjectBeenBroken(closestParkingMeter)
+    broken = HasObjectBeenBroken(closemeter)
 
     if broken then
       sendChatMessage("This parking meter has been broken")
     elseif nearMeter then
       if not (subcommand) then
 
-        if contains(meters, closestParkingMeter) then
-          local time_parked_at = meters[closestParkingMeter]
+        if contains(meters, closemeter) then
+          local time_parked_at = meters[closemeter]
           if time - time_parked_at > max_park_time*60 then
             sendChatMessage("OH MY GOD RUN")
           else
@@ -68,9 +65,11 @@ RegisterCommand("meter", function(source, args)
         end
 
       elseif (subcommand == "pay") then
-        --print(contains(meters, closestParkingMeter))
+        --print(contains(meters, closemeter))
         sendChatMessage("You have paid the parking meter.")
-        meters[closestParkingMeter] = time
+        meters[closemeter] = time
+      elseif (subcommand == "cancel") then
+        meters = table.removeKey(meters, closemeter)
       end
     else
       sendChatMessage("You are not near a parking meter.")
