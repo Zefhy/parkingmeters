@@ -10,7 +10,7 @@ local pcoords = nil
 Citizen.CreateThread(function()
   while true do
     Citizen.Wait(1000)
-    time = time +1
+    time = time + 1
   end
 end)
 
@@ -144,8 +144,8 @@ function DrawText3D(x,y,z, text)
 end
 
 function sendChatMessage(text)
-  TriggerEvent('chat:addMessage', {
-    args = { '^1'..text }
+  TriggerEvent(“chat:addMessage”, {
+    args = { ”^1”..text }
   })
 end
 
