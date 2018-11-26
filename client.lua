@@ -2,10 +2,12 @@ local max_park_time = 30 -- Minutes
 
 local parking_prop = "prop_parknmeter_01"
 local meters = { }
+local meter_orientations = { }
 local time = 0
 local closemeter = nil
 local pcoords = nil
 local vehicleInSpace = nil
+local orientation = nil
 
 -- TIMER
 
@@ -29,7 +31,7 @@ Citizen.CreateThread(function()
     if distance(objectCoordsDraw, pcoords) < 10 then
       if not HasObjectBeenBroken(closemeter) then
 
-        local orientation = vector3(GetEntityForwardX(ped), GetEntityForwardY(ped), -0.1)
+        orientation = vector3(GetEntityForwardX(ped), GetEntityForwardY(ped), -0.1)
         local start, forwardVector = getRaycastMatrix(objectCoordsDraw, orientation)
         DrawLine(start, forwardVector, 255,0,0,255)
 
@@ -80,7 +82,7 @@ RegisterCommand("meter", function(source, args)
         if vehicleInSpace then
           --print(contains(meters, closemeter))
           sendChatMessage("You have paid the parking meter.")
-          TriggerServerEvent("parkingmeter:activatemeter", meterPos)
+          TriggerServerEvent("parkingmeter:activatemeter", meterPos, orientation)
           Citizen.Trace(meterPos)
         else
           sendChatMessage("No vehicle detected.")
@@ -105,9 +107,10 @@ AddEventHandler("parkingmeter:timesync", function(server_time)
 end)
 
 RegisterNetEvent("parkingmeter:update")
-AddEventHandler("parkingmeter:update", function(server_meters)
+AddEventHandler("parkingmeter:update", function(server_meters, server_orientations)
   Citizen.Trace("Received meter update")
   meters = server_meters
+  meter_orientations = server_orientations
 end)
 
 AddEventHandler("playerSpawned", function()

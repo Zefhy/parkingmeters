@@ -1,6 +1,7 @@
 local time = 0
 local sync_rate = 60000
-local meters = { }
+local meter_times = { }
+local meter_orientations = { }
 
 -- Timer
 Citizen.CreateThread(function()
@@ -26,8 +27,9 @@ AddEventHandler("parkingmeter:requestsync", function()
 end)
 
 RegisterNetEvent("parkingmeter:activatemeter")
-AddEventHandler("parkingmeter:activatemeter", function(meter)
-  Citizen.Trace("Received meter activation: " .. meter .. " @ " .. time)
-  meters[meter] = time
-  TriggerClientEvent("parkingmeter:update", -1, meters)
+AddEventHandler("parkingmeter:activatemeter", function(meter, orientation)
+  Citizen.Trace("Received meter activation: " .. meter .. " @ " .. time .. " facing " .. orientation)
+  meter_times[meter] = time
+  meter_orientations[meter] = orientation
+  TriggerClientEvent("parkingmeter:update", -1, meter_times, meter_orientations)
 end)
