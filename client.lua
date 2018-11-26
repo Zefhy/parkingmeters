@@ -76,17 +76,6 @@ RegisterCommand("meter", function(source, args)
     elseif nearMeter then
       if not (subcommand) then
 
-        if contains(meters, closemeter) then
-          local time_parked_at = meters[meterPos]
-          if time - time_parked_at > max_park_time*60 then
-            sendChatMessage("OH MY GOD RUN")
-          else
-            sendChatMessage("Time remaining (minutes): " .. round(timeRemaining(time_parked_at)/60, 1))
-          end
-        else
-          sendChatMessage("This is a parking meter, you may park here for a maximum of "..max_park_time.." minutes. Failure to pay will result in a ticket!")
-        end
-
       elseif (subcommand == "pay") then
         if vehicleInSpace then
           --print(contains(meters, closemeter))
