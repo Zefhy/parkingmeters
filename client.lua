@@ -1,4 +1,4 @@
-local max_park_time = 10/60 -- Minutes
+local max_park_time = 30 -- Minutes
 
 local parking_prop = "prop_parknmeter_01"
 local meters = { }
@@ -6,7 +6,8 @@ local time = 0
 local closemeter = nil
 local pcoords = nil
 
--- Timer
+-- TIMER
+
 Citizen.CreateThread(function()
   while true do
     Citizen.Wait(1000)
@@ -14,11 +15,7 @@ Citizen.CreateThread(function()
   end
 end)
 
-RegisterNetEvent("parkingmeter:timesync")
-AddEventHandler("parkingmeter:timesync", function(server_time)
-  Citizen.Trace("Received time sync: " .. server_time .. " (our client time was " .. time .. ")")
-  time = server_time
-end)
+-- MAIN LOOP
 
 Citizen.CreateThread(function()
   while true do
@@ -43,6 +40,8 @@ Citizen.CreateThread(function()
     Citizen.Wait(0)
   end
 end)
+
+-- METER COMMAND
 
 RegisterCommand("meter", function(source, args)
   local subcommand = args[1]
@@ -83,6 +82,9 @@ RegisterCommand("meter", function(source, args)
   end
 end, false)
 
+
+-- EVENTS
+
 RegisterNetEvent("parkingmeter:timesync")
 AddEventHandler("parkingmeter:timesync", function(server_time)
   Citizen.Trace("Received time sync: " .. server_time .. " (our client time was " .. time .. ")")
@@ -92,6 +94,9 @@ end)
 AddEventHandler("playerSpawned", function()
   TriggerServerEvent("parkingmeter:requestsync")
 end)
+
+
+-- HELPER FUNCTIONS
 
 -- Remove key k (and its value) from table t. Return a new (modified) table.
 function table.removeKey(t, k)
@@ -137,6 +142,7 @@ function DrawMeterStatus(meter, text)
   DrawText3D(meter.x, meter.y, meter.z + 1.4, text)
 end
 
+-- Code from koil: https://forum.fivem.net/t/draw-text-though-the-walls/53398/18
 function DrawText3D(x,y,z, text)
     local onScreen,_x,_y=World3dToScreen2d(x,y,z)
     local px,py,pz=table.unpack(GetGameplayCamCoords())
