@@ -14,6 +14,12 @@ Citizen.CreateThread(function()
   end
 end)
 
+RegisterNetEvent("parkingmeter:timesync")
+AddEventHandler("parkingmeter:timesync", function(server_time)
+  Citizen.Trace("Received time sync: " .. server_time .. " (our client time was " .. time .. ")")
+  time = server_time
+end)
+
 Citizen.CreateThread(function()
   while true do
     pcoords = GetEntityCoords(GetPlayerPed(-1))
