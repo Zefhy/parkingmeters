@@ -17,3 +17,9 @@ Citizen.CreateThread(function()
     Citizen.Wait(sync_rate)
   end
 end)
+
+RegisterNetEvent("parkingmeter:requestsync")
+AddEventHandler("parkingmeter:requestsync", function()
+  Citizen.Trace("Received sync request from " .. source)
+  TriggerClientEvent("parkingmeter:timesync", source, time)
+end)

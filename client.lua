@@ -83,6 +83,15 @@ RegisterCommand("meter", function(source, args)
   end
 end, false)
 
+RegisterNetEvent("parkingmeter:timesync")
+AddEventHandler("parkingmeter:timesync", function(server_time)
+  Citizen.Trace("Received time sync: " .. server_time .. " (our client time was " .. time .. ")")
+  time = server_time
+end)
+
+AddEventHandler("playerSpawned", function()
+  TriggerServerEvent("parkingmeter:requestsync")
+end)
 
 -- Remove key k (and its value) from table t. Return a new (modified) table.
 function table.removeKey(t, k)
