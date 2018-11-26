@@ -25,8 +25,8 @@ Citizen.CreateThread(function()
 
     if distance(objectCoordsDraw, pcoords) < 5 then
       if not HasObjectBeenBroken(closemeter) then
-        if contains(meters, closemeter) then
-          local countdown = round(timeRemaining(meters[closemeter])/60, 1)
+        if contains(meters, objectCoordsDraw) then
+          local countdown = round(timeRemaining(meters[objectCoordsDraw])/60, 1)
           if countdown > 0 then
             DrawMeterStatus(objectCoordsDraw, "~g~"..countdown.." minutes")
           else
@@ -59,7 +59,7 @@ RegisterCommand("meter", function(source, args)
       if not (subcommand) then
 
         if contains(meters, closemeter) then
-          local time_parked_at = meters[closemeter]
+          local time_parked_at = meters[meterPos]
           if time - time_parked_at > max_park_time*60 then
             sendChatMessage("OH MY GOD RUN")
           else
@@ -72,9 +72,10 @@ RegisterCommand("meter", function(source, args)
       elseif (subcommand == "pay") then
         --print(contains(meters, closemeter))
         sendChatMessage("You have paid the parking meter.")
-        meters[closemeter] = time
+        TriggerServerEvent("parkingmeter:activatemeter", meterPos)
+        Citizen.Trace(meterPos)
       elseif (subcommand == "cancel") then
-        meters = table.removeKey(meters, closemeter)
+        meters = table.removeKey(meters, meterPos)
       end
     else
       sendChatMessage("You are not near a parking meter.")
@@ -89,6 +90,12 @@ RegisterNetEvent("parkingmeter:timesync")
 AddEventHandler("parkingmeter:timesync", function(server_time)
   Citizen.Trace("Received time sync: " .. server_time .. " (our client time was " .. time .. ")")
   time = server_time
+end)
+
+RegisterNetEvent("parkingmeter:update")
+AddEventHandler("parkingmeter:update", function(server_meters)
+  Citizen.Trace("Received meter update")
+  meters = server_meters
 end)
 
 AddEventHandler("playerSpawned", function()
