@@ -1,4 +1,4 @@
-local max_park_time = 30 -- Minutes
+local max_park_time = 10/60 -- Minutes
 
 local parking_prop = "prop_parknmeter_01"
 local meters = { }
