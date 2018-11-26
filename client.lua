@@ -28,14 +28,14 @@ Citizen.CreateThread(function()
     closemeter = GetClosestObjectOfType(pcoords.x, pcoords.y, pcoords.z, 10.0, GetHashKey(parking_prop), false, false, false)
     local objectCoordsDraw = GetEntityCoords(closemeter)
 
-    if distance(objectCoordsDraw, pcoords) < 10 then
+    if distance(objectCoordsDraw, pcoords) < 20 then
       if not HasObjectBeenBroken(closemeter) then
 
         orientation = vector3(GetEntityForwardX(ped), GetEntityForwardY(ped), -0.1)
         local start, forwardVector = getRaycastMatrix(objectCoordsDraw, orientation)
-        DrawLine(start, forwardVector, 255,0,0,255)
+        --DrawLine(start, forwardVector, 255,0,0,255)
 
-        local rayHandle = CastRayPointToPoint(start,forwardVector, 10, ped, 0)
+        local rayHandle = CastRayPointToPoint(start,forwardVector, 10, nil, 0)
         local _, _, _, _, targetVehicle = GetRaycastResult(rayHandle)
         if targetVehicle ~= nil then
           if DoesEntityExist(targetVehicle) then
