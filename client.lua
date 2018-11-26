@@ -45,8 +45,20 @@ Citizen.CreateThread(function()
           end
         end
 
-        if contains(meters, objectCoordsDraw) then
+        if contains(meters, objectCoordsDraw) and contains(meter_orientations, objectCoordsDraw) then
           local countdown = round(timeRemaining(meters[objectCoordsDraw])/60, 1)
+
+          local start, forwardVector = getRaycastMatrix(objectCoordsDraw, meter_orientations[objectCoordsDraw])
+          local rayHandle = CastRayPointToPoint(start,forwardVector, 10, nil, 0)
+          local _, _, _, _, targetVehicle = GetRaycastResult(rayHandle)
+          DrawLine(start, forwardVector, 255,0,0,255)
+
+          if targetVehicle == 0 then
+            -- Reset the meter!!!
+            TriggerServerEvent("parkingmeter:cancelmeter", objectCoordsDraw)
+            Citizen.Wait(1000) -- Wait so we don't send multiple cancellations
+          end
+          
           if countdown > 0 then
             DrawMeterStatus(objectCoordsDraw, "~g~"..countdown.." minutes")
           else
@@ -89,7 +101,8 @@ RegisterCommand("meter", function(source, args)
         end
 
       elseif (subcommand == "cancel") then
-        meters = table.removeKey(meters, meterPos)
+        --meters = table.removeKey(meters, meterPos)
+        TriggerServerEvent("parkingmeter:cancelmeter", meterPos)
       end
     else
       sendChatMessage("You are not near a parking meter.")

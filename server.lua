@@ -33,3 +33,37 @@ AddEventHandler("parkingmeter:activatemeter", function(meter, orientation)
   meter_orientations[meter] = orientation
   TriggerClientEvent("parkingmeter:update", -1, meter_times, meter_orientations)
 end)
+
+RegisterNetEvent("parkingmeter:cancelmeter")
+AddEventHandler("parkingmeter:cancelmeter", function(meter)
+  Citizen.Trace("Received meter cancellation: " .. meter)
+  meter_times = table.removeKey(meter_times, meter)
+  meter_orientations = table.removeKey(meter_orientations, meter)
+  TriggerClientEvent("parkingmeter:update", -1, meter_times, meter_orientations)
+end)
+
+function table.removeKey(t, k)
+	local i = 0
+	local keys, values = {},{}
+	for k,v in pairs(t) do
+		i = i + 1
+		keys[i] = k
+		values[i] = v
+	end
+
+	while i>0 do
+		if keys[i] == k then
+			table.remove(keys, i)
+			table.remove(values, i)
+			break
+		end
+		i = i - 1
+	end
+
+	local a = {}
+	for i = 1,#keys do
+		a[keys[i]] = values[i]
+	end
+
+	return a
+end
