@@ -144,8 +144,8 @@ function DrawText3D(x,y,z, text)
 end
 
 function sendChatMessage(text)
-  TriggerEvent(“chat:addMessage”, {
-    args = { ”^1”..text }
+  TriggerEvent("chat:addMessage", {
+    args = { "^1"..text }
   })
 end
 
