@@ -5,6 +5,7 @@ local meters = { }
 local time = 0
 local closemeter = nil
 local pcoords = nil
+local vehicleInSpace = nil
 
 -- TIMER
 
@@ -19,12 +20,29 @@ end)
 
 Citizen.CreateThread(function()
   while true do
-    pcoords = GetEntityCoords(GetPlayerPed(-1))
+    local ped = GetPlayerPed(-1)
+    pcoords = GetEntityCoords(ped)
+
     closemeter = GetClosestObjectOfType(pcoords.x, pcoords.y, pcoords.z, 10.0, GetHashKey(parking_prop), false, false, false)
     local objectCoordsDraw = GetEntityCoords(closemeter)
 
-    if distance(objectCoordsDraw, pcoords) < 5 then
+    if distance(objectCoordsDraw, pcoords) < 10 then
       if not HasObjectBeenBroken(closemeter) then
+
+        local orientation = vector3(GetEntityForwardX(ped), GetEntityForwardY(ped), -0.1)
+        local start, forwardVector = getRaycastMatrix(objectCoordsDraw, orientation)
+        DrawLine(start, forwardVector, 255,0,0,255)
+
+        local rayHandle = CastRayPointToPoint(start,forwardVector, 10, ped, 0)
+        local _, _, _, _, targetVehicle = GetRaycastResult(rayHandle)
+        if targetVehicle ~= nil then
+          if DoesEntityExist(targetVehicle) then
+            vehicleInSpace = targetVehicle
+          else
+            vehicleInSpace = nil
+          end
+        end
+
         if contains(meters, objectCoordsDraw) then
           local countdown = round(timeRemaining(meters[objectCoordsDraw])/60, 1)
           if countdown > 0 then
@@ -70,10 +88,15 @@ RegisterCommand("meter", function(source, args)
         end
 
       elseif (subcommand == "pay") then
-        --print(contains(meters, closemeter))
-        sendChatMessage("You have paid the parking meter.")
-        TriggerServerEvent("parkingmeter:activatemeter", meterPos)
-        Citizen.Trace(meterPos)
+        if vehicleInSpace then
+          --print(contains(meters, closemeter))
+          sendChatMessage("You have paid the parking meter.")
+          TriggerServerEvent("parkingmeter:activatemeter", meterPos)
+          Citizen.Trace(meterPos)
+        else
+          sendChatMessage("No vehicle detected.")
+        end
+
       elseif (subcommand == "cancel") then
         meters = table.removeKey(meters, meterPos)
       end
@@ -175,6 +198,12 @@ function sendChatMessage(text)
   TriggerEvent("chat:addMessage", {
     args = { "^1"..text }
   })
+end
+
+function getRaycastMatrix(meterpos, rotation)
+  local meterpos = meterpos
+  local scannerpos = vector3(meterpos.x, meterpos.y, meterpos.z+0.8)
+  return scannerpos, scannerpos+rotation*2.6
 end
 
 function contains(set, key)
