@@ -1,13 +1,11 @@
-local max_park_time = 10/60 -- Minutes
+local max_park_time = 10 -- Minutes
 
 local parking_prop = "prop_parknmeter_01"
 local meters = { }
-local meter_orientations = { }
 local time = 0
 local closemeter = nil
 local pcoords = nil
-local vehicleInSpace = nil
-local orientation = nil
+local debug = true
 
 -- TIMER
 
@@ -26,47 +24,25 @@ Citizen.CreateThread(function()
     pcoords = GetEntityCoords(ped)
 
     closemeter = GetClosestObjectOfType(pcoords.x, pcoords.y, pcoords.z, 10.0, GetHashKey(parking_prop), false, false, false)
-    local objectCoordsDraw = GetEntityCoords(closemeter)
+    local meterPos = GetEntityCoords(closemeter)
+    local broken = HasObjectBeenBroken(closemeter)
+    if distance(meterPos, pcoords) < 20 then
+      if contains(meters, meterPos) then
+        if not broken then
+          local countdown = round(timeRemaining(meters[meterPos])/60, 1)
 
-    if distance(objectCoordsDraw, pcoords) < 20 then
-      if not HasObjectBeenBroken(closemeter) then
-
-        orientation = vector3(GetEntityForwardX(ped), GetEntityForwardY(ped), -0.1)
-        local start, forwardVector = getRaycastMatrix(objectCoordsDraw, orientation)
-        --DrawLine(start, forwardVector, 255,0,0,255)
-
-        local rayHandle = CastRayPointToPoint(start,forwardVector, 10, nil, 0)
-        local _, _, _, _, targetVehicle = GetRaycastResult(rayHandle)
-        if targetVehicle ~= nil then
-          if DoesEntityExist(targetVehicle) then
-            vehicleInSpace = targetVehicle
-          else
-            vehicleInSpace = nil
-          end
-        end
-
-        if contains(meters, objectCoordsDraw) and contains(meter_orientations, objectCoordsDraw) then
-          local countdown = round(timeRemaining(meters[objectCoordsDraw])/60, 1)
-
-          local start, forwardVector = getRaycastMatrix(objectCoordsDraw, meter_orientations[objectCoordsDraw])
-          local rayHandle = CastRayPointToPoint(start,forwardVector, 10, nil, 0)
-          local _, _, _, _, targetVehicle = GetRaycastResult(rayHandle)
-          DrawLine(start, forwardVector, 255,0,0,255)
-
-          if targetVehicle == 0 then
-            -- Reset the meter!!!
-            TriggerServerEvent("parkingmeter:cancelmeter", objectCoordsDraw)
-            Citizen.Wait(1000) -- Wait so we don't send multiple cancellations
-          end
-          
           if countdown > 0 then
-            DrawMeterStatus(objectCoordsDraw, "~g~"..countdown.." minutes")
+            DrawMeterStatus(meterPos, "~g~"..countdown.." minutes")
           else
-            DrawMeterStatus(objectCoordsDraw, "~r~EXPIRED")
+            TriggerServerEvent("parkingmeter:cancelmeter", meterPos)
+            Citizen.Wait(1000)
           end
         else
-          DrawMeterStatus(objectCoordsDraw, "~g~Vacant")
+          TriggerServerEvent("parkingmeter:cancelmeter", meterPos)
+          Citizen.Wait(1000)
         end
+      else
+        --DrawMeterStatus(objectCoordsDraw, "~g~Vacant")
       end
     end
     Citizen.Wait(0)
@@ -91,14 +67,9 @@ RegisterCommand("meter", function(source, args)
       if not (subcommand) then
 
       elseif (subcommand == "pay") then
-        if vehicleInSpace then
-          --print(contains(meters, closemeter))
-          sendChatMessage("You have paid the parking meter.")
-          TriggerServerEvent("parkingmeter:activatemeter", meterPos, orientation)
-          Citizen.Trace(meterPos)
-        else
-          sendChatMessage("No vehicle detected.")
-        end
+        sendChatMessage("You have paid the parking meter.")
+        TriggerServerEvent("parkingmeter:activatemeter", meterPos)
+        debugLog(meterPos)
 
       elseif (subcommand == "cancel") then
         --meters = table.removeKey(meters, meterPos)
@@ -115,15 +86,14 @@ end, false)
 
 RegisterNetEvent("parkingmeter:timesync")
 AddEventHandler("parkingmeter:timesync", function(server_time)
-  Citizen.Trace("Received time sync: " .. server_time .. " (our client time was " .. time .. ")")
+  debugLog("Received time sync: " .. server_time .. " (our client time was " .. time .. ")")
   time = server_time
 end)
 
 RegisterNetEvent("parkingmeter:update")
 AddEventHandler("parkingmeter:update", function(server_meters, server_orientations)
-  Citizen.Trace("Received meter update")
+  debugLog("Received meter update")
   meters = server_meters
-  meter_orientations = server_orientations
 end)
 
 AddEventHandler("playerSpawned", function()
@@ -133,31 +103,10 @@ end)
 
 -- HELPER FUNCTIONS
 
--- Remove key k (and its value) from table t. Return a new (modified) table.
-function table.removeKey(t, k)
-	local i = 0
-	local keys, values = {},{}
-	for k,v in pairs(t) do
-		i = i + 1
-		keys[i] = k
-		values[i] = v
-	end
-
-	while i>0 do
-		if keys[i] == k then
-			table.remove(keys, i)
-			table.remove(values, i)
-			break
-		end
-		i = i - 1
-	end
-
-	local a = {}
-	for i = 1,#keys do
-		a[keys[i]] = values[i]
-	end
-
-	return a
+function debugLog(message)
+  if debug then
+    Citizen.Trace("PARKINGMETER DEBUG: " .. message)
+  end
 end
 
 function timeRemaining(time_parked_at)

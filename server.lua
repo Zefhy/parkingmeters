@@ -1,7 +1,7 @@
 local time = 0
 local sync_rate = 60000
 local meter_times = { }
-local meter_orientations = { }
+local debug = true
 
 -- Timer
 Citizen.CreateThread(function()
@@ -14,7 +14,7 @@ end)
 -- Keep client times up to date
 Citizen.CreateThread(function()
   while true do
-    Citizen.Trace("Sent timesync at "..time)
+    debugLog("Sent timesync at "..time)
     TriggerClientEvent("parkingmeter:timesync", -1, time)
     Citizen.Wait(sync_rate)
   end
@@ -22,25 +22,29 @@ end)
 
 RegisterNetEvent("parkingmeter:requestsync")
 AddEventHandler("parkingmeter:requestsync", function()
-  Citizen.Trace("Received sync request from " .. source)
+  debugLog("Received sync request from " .. source)
   TriggerClientEvent("parkingmeter:timesync", source, time)
 end)
 
 RegisterNetEvent("parkingmeter:activatemeter")
 AddEventHandler("parkingmeter:activatemeter", function(meter, orientation)
-  Citizen.Trace("Received meter activation: " .. meter .. " @ " .. time .. " facing " .. orientation)
+  debugLog("Received meter activation: " .. meter .. " @ " .. time)
   meter_times[meter] = time
-  meter_orientations[meter] = orientation
-  TriggerClientEvent("parkingmeter:update", -1, meter_times, meter_orientations)
+  TriggerClientEvent("parkingmeter:update", -1, meter_times)
 end)
 
 RegisterNetEvent("parkingmeter:cancelmeter")
 AddEventHandler("parkingmeter:cancelmeter", function(meter)
-  Citizen.Trace("Received meter cancellation: " .. meter)
+  debugLog("Received meter cancellation: " .. meter)
   meter_times = table.removeKey(meter_times, meter)
-  meter_orientations = table.removeKey(meter_orientations, meter)
-  TriggerClientEvent("parkingmeter:update", -1, meter_times, meter_orientations)
+  TriggerClientEvent("parkingmeter:update", -1, meter_times)
 end)
+
+function debugLog(message)
+  if debug then
+    Citizen.Trace("PARKINGMETER DEBUG: " .. message .. "\n")
+  end
+end
 
 function table.removeKey(t, k)
 	local i = 0
