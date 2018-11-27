@@ -154,6 +154,12 @@ function sendChatMessage(text)
   })
 end
 
+function drawNotification(text)
+    SetNotificationTextEntry("STRING")
+    AddTextComponentSubstringPlayerName(text)
+    DrawNotification(false, false)
+end
+
 function getRaycastMatrix(meterpos, rotation)
   local meterpos = meterpos
   local scannerpos = vector3(meterpos.x, meterpos.y, meterpos.z+0.8)
