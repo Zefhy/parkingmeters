@@ -148,22 +148,10 @@ function DrawText3D(x,y,z, text)
     end
 end
 
-function sendChatMessage(text)
-  TriggerEvent("chat:addMessage", {
-    args = { "^1"..text }
-  })
-end
-
 function drawNotification(text)
   SetNotificationTextEntry("STRING")
   AddTextComponentString(text)
   DrawNotification(false, false)
-end
-
-function getRaycastMatrix(meterpos, rotation)
-  local meterpos = meterpos
-  local scannerpos = vector3(meterpos.x, meterpos.y, meterpos.z+0.8)
-  return scannerpos, scannerpos+rotation*2.6
 end
 
 function contains(set, key)
