@@ -62,12 +62,12 @@ RegisterCommand("meter", function(source, args)
     broken = HasObjectBeenBroken(closemeter)
 
     if broken then
-      sendChatMessage("This parking meter has been broken")
+      drawNotification("~r~This parking meter has been broken")
     elseif nearMeter then
       if not (subcommand) then
 
       elseif (subcommand == "pay") then
-        sendChatMessage("You have paid the parking meter.")
+        drawNotification("~p~You have paid the parking meter.")
         TriggerServerEvent("parkingmeter:activatemeter", meterPos)
         debugLog(meterPos)
 
@@ -76,7 +76,7 @@ RegisterCommand("meter", function(source, args)
         TriggerServerEvent("parkingmeter:cancelmeter", meterPos)
       end
     else
-      sendChatMessage("You are not near a parking meter.")
+      drawNotification("~r~You are not near a parking meter.")
     end
   end
 end, false)
@@ -155,9 +155,9 @@ function sendChatMessage(text)
 end
 
 function drawNotification(text)
-    SetNotificationTextEntry("STRING")
-    AddTextComponentSubstringPlayerName(text)
-    DrawNotification(false, false)
+  SetNotificationTextEntry("STRING")
+  AddTextComponentString(text)
+  DrawNotification(false, false)
 end
 
 function getRaycastMatrix(meterpos, rotation)
