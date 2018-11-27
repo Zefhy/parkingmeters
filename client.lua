@@ -32,7 +32,7 @@ Citizen.CreateThread(function()
           local countdown = round(timeRemaining(meters[meterPos])/60, 1)
 
           if countdown > 0 then
-            DrawMeterStatus(meterPos, "~g~"..countdown.." minutes")
+            DrawMeterStatus(meterPos, "~p~"..countdown.." minutes")
           else
             TriggerServerEvent("parkingmeter:cancelmeter", meterPos)
             Citizen.Wait(1000)
